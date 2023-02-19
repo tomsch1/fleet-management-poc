@@ -11,7 +11,7 @@ db = SQLAlchemy(app)
 
 class Device(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
+    name = db.Column(db.String(50), nullable=False)
     type = db.Column(db.String(50), nullable=False)
     location = db.Column(db.String(50), nullable=False)
 
@@ -59,6 +59,18 @@ def add_device():
     db.session.commit()
     return jsonify({'id': device.id, 'name': device.name, 'type': device.type, 'location': device.location}), 201
 
+@app.route('/devices/<int:id>', methods=['POST'])
+def add_device_with_id(id):
+    device_exists = Device.query.get(id)
+    if device_exists:
+        return jsonify({'error': 'Device already exists'}), 404
+    name = request.json['name']
+    type = request.json['type']
+    location = request.json['location']
+    device = Device(id=id, name=name, type=type, location=location)
+    db.session.add(device)
+    db.session.commit()
+    return jsonify({'id': device.id, 'name': device.name, 'type': device.type, 'location': device.location}), 201
 
 @app.route('/devices/<int:id>', methods=['PUT'])
 def update_device(id):
